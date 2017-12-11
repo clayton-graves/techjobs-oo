@@ -1,10 +1,12 @@
 package org.launchcode.controllers;
 
+import org.launchcode.models.*;
 import org.launchcode.models.forms.JobForm;
 import org.launchcode.models.data.JobData;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -25,6 +27,8 @@ public class JobController {
 
         // TODO #1 - get the Job with the given ID and pass it into the view
 
+        Job someJob = jobData.findById(id);
+        model.addAttribute("theJob", someJob);
         return "job-detail";
     }
 
@@ -35,13 +39,20 @@ public class JobController {
     }
 
     @RequestMapping(value = "add", method = RequestMethod.POST)
-    public String add(Model model, @Valid JobForm jobForm, Errors errors) {
+    public String add(@ModelAttribute  @Valid JobForm jobForm, Errors errors, Model model) {
 
         // TODO #6 - Validate the JobForm model, and if valid, create a
-        // new Job and add it to the jobData data store. Then
-        // redirect to the job detail view for the new Job.
+        if (errors.hasErrors()){
+            return "new-job";
+        }
+        Employer employah =jobData.getEmployers().findById(jobForm.getEmployerId());
+        Location locache =jobData.getLocations().findById(jobForm.getLocationId());
+        PositionType posiche = jobData.getPositionTypes().findById(jobForm.getPositionId());
+        CoreCompetency comp = jobData.getCoreCompetencies().findById(jobForm.getSkillId());
+        Job newJob = new Job(jobForm.getName(), employah, locache, posiche, comp );
+        jobData.add(newJob);
+        return "redirect:?id=" + newJob.getId();
 
-        return "";
 
     }
 }
